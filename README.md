@@ -80,7 +80,8 @@ LGD is computed dynamically based on collateral backing:
 The model performance is evaluated through three key credit risk validation tools:
 1. **Gini Coefficient / ROC-AUC:** Measures the rating model's ability to rank-order defaults. An AUC of >0.75 represents strong discrimination.
 2. **Population Stability Index (PSI):** Measures the shift in rating distribution between credit origination (baseline) and today. It is calculated step-by-step in pure Python:
-   $$PSI = \sum_{bin} \left( Actual\% - Expected\% \right) \times \ln\left( \frac{Actual\%}{Expected\%} \right)$$
+   $$PSI = \sum_{i=1}^{k} \left( Actual_i - Expected_i \right) \times \ln\left( \frac{Actual_i}{Expected_i} \right)$$
+   - Where $Actual_i$ and $Expected_i$ are the actual and expected percentages for rating bin $i$.
    - $PSI < 0.1$: Stable (Green)
    - $0.1 \le PSI < 0.25$: Moderate shift (Amber)
    - $PSI \ge 0.25$: Significant shift requiring recalibration (Red)
