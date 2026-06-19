@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFRS 9 Expected Credit Loss (ECL) Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2zm0 8H7v-2h10v2z"/>
+                </svg>
+            </div>
+            <div class="logo-text">IFRS 9 Analytics</div>
+        </div>
+        
+        <ul class="nav-links">
+            <li>
+                <a class="nav-item active" data-tab="overview">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    Overview
+                </a>
+            </li>
+            <li>
+                <a class="nav-item" data-tab="validation">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    Data Quality
+                </a>
+            </li>
+            <li>
+                <a class="nav-item" data-tab="calculator">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    ECL Engine
+                </a>
+            </li>
+            <li>
+                <a class="nav-item" data-tab="forecast">
+                    <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                    Forecasting
+                </a>
+            </li>
+            <li>
+                <a class="nav-item" data-tab="monitoring">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                    Model Monitoring
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            IFRS 9 ECL Engine v1.0.0<br>
+            Portfolio Risk Management
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        
+        <!-- Tab: Overview -->
+        <div id="overview" class="tab-content active">
+            <div class="header-bar">
+                <div class="header-title">
+                    <h1>ECL Dashboard Overview</h1>
+                    <p>Monthly reporting, stage allocations, and overall portfolio risk status.</p>
+                </div>
+                <button class="btn-primary" id="btn-regenerate-data">
+                    <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    Regenerate Portfolio
+                </button>
+            </div>
+            
+            <!-- KPI Summary row -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Portfolio Exposure</div>
+                    <div class="kpi-value" id="kpi-total-exposure">$0.00</div>
+                    <div class="kpi-sub">Sum of all outstanding balances</div>
+                </div>
+                <div class="kpi-card stage1">
+                    <div class="kpi-label">Stage 1 ECL (12-Month)</div>
+                    <div class="kpi-value" id="kpi-stage1-ecl">$0.00</div>
+                    <div class="kpi-sub" id="sub-stage1-coverage">Coverage: 0.00%</div>
+                </div>
+                <div class="kpi-card stage2">
+                    <div class="kpi-label">Stage 2 ECL (Lifetime)</div>
+                    <div class="kpi-value" id="kpi-stage2-ecl">$0.00</div>
+                    <div class="kpi-sub" id="sub-stage2-coverage">Coverage: 0.00%</div>
+                </div>
+                <div class="kpi-card stage3">
+                    <div class="kpi-label">Stage 3 ECL (Credit-Impaired)</div>
+                    <div class="kpi-value" id="kpi-stage3-ecl">$0.00</div>
+                    <div class="kpi-sub" id="sub-stage3-coverage">Coverage: 0.00%</div>
+                </div>
+            </div>
+            
+            <!-- Charts Row -->
+            <div class="grid-2x1">
+                <div class="card">
+                    <div class="card-title">ECL Stage Allocation & Coverage</div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chart-ecl-stages"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">ECL Segment Summary</div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chart-ecl-segments"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">IFRS 9 Regulatory Stage Criteria</div>
+                <div class="alert-banner">
+                    <strong>Stage 1 (Performing):</strong> Loans that have not experienced a Significant Increase in Credit Risk (SICR) since origination. Requires <strong>12-month ECL</strong>.<br><br>
+                    <strong>Stage 2 (Underperforming):</strong> Loans that have experienced a Significant Increase in Credit Risk (SICR) based on 30+ DPD, rating downgrade notches, or PD threshold exceedance. Requires <strong>Lifetime ECL</strong>.<br><br>
+                    <strong>Stage 3 (Non-Performing):</strong> Defaulted or credit-impaired loans (90+ DPD or Rating 10). Requires <strong>Lifetime ECL</strong>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Data Quality -->
+        <div id="validation" class="tab-content">
+            <div class="header-bar">
+                <div class="header-title">
+                    <h1>Data Quality & Validation Suite</h1>
+                    <p>Completeness and logical consistency checks prior to calculations (IFRS 9 Data Quality control).</p>
+                </div>
+            </div>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Data Validation Pass Rate</div>
+                    <div class="kpi-value" id="kpi-pass-rate">0.00%</div>
+                    <div class="kpi-sub" id="kpi-validation-status">Passed / Total</div>
+                </div>
+                <div class="kpi-card stage3">
+                    <div class="kpi-label">Failed Quality Checks</div>
+                    <div class="kpi-value" id="kpi-failed-count">0</div>
+                    <div class="kpi-sub">Flagged and excluded from calculations</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Missing Ratings</div>
+                    <div class="kpi-value" id="kpi-missing-ratings">0</div>
+                    <div class="kpi-sub">Completeness rule violation</div>
+                </div>
+                <div class="kpi-card stage2">
+                    <div class="kpi-label">Logical Inconsistencies</div>
+                    <div class="kpi-value" id="kpi-logical-errors">0</div>
+                    <div class="kpi-sub">Negative DPD, EIR, or term errors</div>
+                </div>
+            </div>
+            
+            <div class="grid-2x1">
+                <div class="card">
+                    <div class="card-title">Quality Checks Breakdown</div>
+                    <div style="height: 320px; position: relative;">
+                        <canvas id="chart-validation-rules"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Critical Verification Controls</div>
+                    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                        <div style="padding:0.75rem; border-left:3px solid var(--stage1-color); background:rgba(255,255,255,0.02)">
+                            <strong style="color:white; font-size:0.9rem;">Completeness check:</strong>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.25rem;">Ensures rating and exposure are present on all records to prevent calculation dropouts.</p>
+                        </div>
+                        <div style="padding:0.75rem; border-left:3px solid var(--stage2-color); background:rgba(255,255,255,0.02)">
+                            <strong style="color:white; font-size:0.9rem;">Logical Limits check:</strong>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.25rem;">Checks for negative interest rates, negative terms, or balances exceeding limits by 1.05x.</p>
+                        </div>
+                        <div style="padding:0.75rem; border-left:3px solid var(--stage3-color); background:rgba(255,255,255,0.02)">
+                            <strong style="color:white; font-size:0.9rem;">Outlier & Haircut threshold:</strong>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.25rem;">Flags abnormally high EIR (>35%) or LTV (>300%) representing input errors.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Dirty Records Excluded Sample (First 10 records)</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Segment</th>
+                                <th>Balance</th>
+                                <th>Current Rating</th>
+                                <th>DPD</th>
+                                <th>EIR</th>
+                                <th>Remaining Term</th>
+                                <th>Flagged Issues</th>
+                            </tr>
+                        </thead>
+                        <tbody id="validation-dirty-tbody">
+                            <tr><td colspan="8" style="text-align:center;">No dirty records found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: ECL Engine / Interactive Calculator -->
+        <div id="calculator" class="tab-content">
+            <div class="header-bar">
+                <div class="header-title">
+                    <h1>IFRS 9 ECL Engine & Staging</h1>
+                    <p>Adjust macroeconomic parameters and scenario weights to run live simulations of Point-in-Time ECL.</p>
+                </div>
+            </div>
+            
+            <!-- Controls Panel -->
+            <div class="card">
+                <div class="card-title">Staging Simulator Controls</div>
+                <div class="control-panel">
+                    <div class="control-group">
+                        <label>Macro: GDP Growth Rate</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="slider-gdp" min="-50" max="60" value="25">
+                            <div class="value-box" id="val-gdp">2.5%</div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Macro: Unemployment Rate</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="slider-unemp" min="10" max="120" value="40">
+                            <div class="value-box" id="val-unemp">4.0%</div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Macro: Inflation Rate</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="slider-infl" min="-10" max="80" value="20">
+                            <div class="value-box" id="val-infl">2.0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <div class="control-group">
+                        <label>Base Scenario Weight</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="slider-w-base" min="0" max="100" value="50">
+                            <div class="value-box" id="val-w-base">50%</div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Optimistic Weight</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="slider-w-opt" min="0" max="100" value="30">
+                            <div class="value-box" id="val-w-opt">30%</div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Pessimistic (Stress) Weight</label>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="slider-w-pes" min="0" max="100" value="20">
+                            <div class="value-box" id="val-w-pes">20%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Calculated ECL</div>
+                    <div class="kpi-value" id="calc-kpi-total-ecl">$0.00</div>
+                    <div class="kpi-sub" id="calc-kpi-coverage">Coverage: 0.00%</div>
+                </div>
+                <div class="kpi-card stage1">
+                    <div class="kpi-label">Stage 1 Balance</div>
+                    <div class="kpi-value" id="calc-kpi-s1-bal">$0.00</div>
+                    <div class="kpi-sub" id="calc-kpi-s1-count">Count: 0</div>
+                </div>
+                <div class="kpi-card stage2">
+                    <div class="kpi-label">Stage 2 Balance (SICR)</div>
+                    <div class="kpi-value" id="calc-kpi-s2-bal">$0.00</div>
+                    <div class="kpi-sub" id="calc-kpi-s2-count">Count: 0</div>
+                </div>
+                <div class="kpi-card stage3">
+                    <div class="kpi-label">Stage 3 Balance (Default)</div>
+                    <div class="kpi-value" id="calc-kpi-s3-bal">$0.00</div>
+                    <div class="kpi-sub" id="calc-kpi-s3-count">Count: 0</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Portfolio Calculation Outputs (First 50 clean records)</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Segment</th>
+                                <th>Balance</th>
+                                <th>Current Rating</th>
+                                <th>DPD</th>
+                                <th>12m PiT PD</th>
+                                <th>LGD</th>
+                                <th>Stage</th>
+                                <th>Calculated ECL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calc-results-tbody">
+                            <tr><td colspan="9" style="text-align:center;">Running calculation...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Forecasting & Budgeting -->
+        <div id="forecast" class="tab-content">
+            <div class="header-bar">
+                <div class="header-title">
+                    <h1>ECL Forecasting & Budget Planning</h1>
+                    <p>5-year ECL outlook (2026 - 2030) simulated under multiple macroeconomic scenario paths.</p>
+                </div>
+            </div>
+            
+            <div class="grid-2x1" style="grid-template-columns: 3fr 1fr;">
+                <div class="card">
+                    <div class="card-title">5-Year Projected ECL Charges ($)</div>
+                    <div style="height: 350px; position: relative;">
+                        <canvas id="chart-forecast"></canvas>
+                    </div>
+                </div>
+                <div class="card" style="display:flex; flex-direction:column; justify-content:center;">
+                    <div class="card-title">Budget Implications</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5; margin-bottom:1rem;">
+                        <strong>Pessimistic scenario</strong> acts as a stress test. Budget reserves should account for potential rating migration.
+                    </p>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">
+                        Amortization rates assume <strong>15% natural portfolio decay</strong> per year without credit expansion.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Forecast Projections Detail Table</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Year</th>
+                                <th>GDP Growth</th>
+                                <th>Unemployment</th>
+                                <th>Portfolio Exposure</th>
+                                <th>Projected ECL</th>
+                                <th>Coverage Ratio</th>
+                                <th>Stage 1 Bal</th>
+                                <th>Stage 2 Bal</th>
+                                <th>Stage 3 Bal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecast-tbody">
+                            <tr><td colspan="10" style="text-align:center;">Running forecast...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Model Monitoring & Validation -->
+        <div id="monitoring" class="tab-content">
+            <div class="header-bar">
+                <div class="header-title">
+                    <h1>Model Monitoring & Calibration</h1>
+                    <p>Quantitative review of PD rating model stability, classification capability, and accuracy.</p>
+                </div>
+            </div>
+            
+            <div class="grid-2x1">
+                <div class="card">
+                    <div class="card-title">Model Stability & Discrimination Reports</div>
+                    <div class="metric-box">
+                        <span class="metric-name">Population Stability Index (PSI)</span>
+                        <span class="metric-value" id="monitor-psi-val">0.00</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-name">PSI Status</span>
+                        <span class="metric-value" id="monitor-psi-status">-</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-name">Rating Model ROC-AUC</span>
+                        <span class="metric-value" id="monitor-auc-val">0.00</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-name">Rating Model Gini Coefficient</span>
+                        <span class="metric-value" id="monitor-gini-val">0.00</span>
+                    </div>
+                    <div style="padding:1rem; font-size:0.85rem; color:var(--text-secondary); border-top:1px solid var(--border-color); margin-top:0.5rem;">
+                        <strong>Validation Action:</strong> <span id="monitor-action-text">-</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Rating Model ROC Curve (Discrimination)</div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="chart-roc"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid-2x1" style="grid-template-columns: 1.2fr 1.8fr;">
+                <!-- Step-by-step PSI display -->
+                <div class="card">
+                    <div class="card-title">PSI Step-by-Step Calculation Table</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rating</th>
+                                    <th>Baseline %</th>
+                                    <th>Current %</th>
+                                    <th>Index Contribution</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monitor-psi-tbody">
+                                <tr><td colspan="4" style="text-align:center;">Calculating PSI...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.75rem;">
+                        * Smoothed calculation handles zero-value bins using \(10^{-5}\) offset.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Backtesting: Predicted PD vs. Actual Observed Default Rate</div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chart-backtest"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Loading Spinner Overlay -->
+    <div class="overlay" id="loading-overlay">
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <div>Processing IFRS 9 Calculations...</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
