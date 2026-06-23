@@ -4,7 +4,7 @@
 set -e
 
 # Project root directory
-PROJECT_ROOT="/Users/fhyfhy/Desktop/ifrs9-ecl-analytics"
+PROJECT_ROOT="$(dirname "$(realpath "$0")")"
 
 echo "============================================="
 echo "Starting IFRS 9 ECL Calculator & Dashboard Setup"
